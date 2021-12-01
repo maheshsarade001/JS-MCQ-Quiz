@@ -1,36 +1,20 @@
-const quizDb = [{
-    question: "Q1 : What is the full form of HTML ?",
-    a: "HyperText Mark Langauge",
-    b: "Hyper Markup Langugae",
-    c: "HyperText Markup Langauge",
-    d: "Hello Markup Language",
-    ans: "ans3",
-},
-{
-    question: "Q2 : What is the full form of CSS ?",
-    a: "Control Style Sheets",
-    b: "Cascading Style Sheets",
-    c: "Cascading Super Sheets",
-    d: "Controlled Style Sever",
-    ans: "ans2",
-},
-{
-    question: "Q3 : Which tag is used as main heading in HTML ?",
-    a: "h2",
-    b: "h3",
-    c: "h6",
-    d: "h1",
-    ans: "ans4",
-},
-{
-    question: "Q4 : Which property is used to give space on top of content?",
-    a: "margin-top",
-    b: "margin-bottom",
-    c: "padding-top",
-    d: "padding-bottom",
-    ans: "ans1",
-},
-];
+let rightAns;
+
+document.addEventListener("DOMContentLoaded", function () {
+  addQuestion();
+
+  eventListeners();
+});
+
+eventListeners = () => {
+  document.querySelector("#submit").addEventListener("click", validateAnswer);
+};
+addQuestion = () => {
+  const url = "https://opentdb.com/api.php?amount=10&category=25";
+  fetch(url)
+    .then((data) => data.json())
+    .then((result) => loadQuestion(result.results));
+};
 
 const question = document.querySelector(".question");
 const option1 = document.querySelector("#option1");
@@ -47,45 +31,70 @@ let score = 0;
 
 let questionCount = 0;
 
-const loadQuestion = () => {
-    const questionList = quizDb[questionCount];
+const loadQuestion = (arr) => {
+  const questionList = arr[questionCount]; //arr[]
+  console.log(arr);
+  question.innerHTML = questionList.question;
+  option1.innerHTML = questionList.correct_answer;
+  option2.innerHTML = questionList.incorrect_answers[0];
+  option3.innerHTML = questionList.incorrect_answers[1];
+  option4.innerHTML = questionList.incorrect_answers[2];
 
-    question.innerHTML = questionList.question;
-    option1.innerHTML = questionList.a;
-    option2.innerHTML = questionList.b;
-    option3.innerHTML = questionList.c;
-    option4.innerHTML = questionList.d;
+  rightAns = questionList.correct_answer;
+
+
 };
-loadQuestion();
 
 const getAnswer = () => {
-    answers.forEach((current) => {
-        if (current.checked) {
-            answer = current.id;
-        }
-    });
-    return answer;
+  answers.forEach(() => {
+    for (var i = 0; i < answers.length; i++) {
+      var selector = "label[for=" + answers[i].id + "]";
+      var label = document.querySelector(selector);
+      var text = label.innerHTML;
+      // do stuff
+      if (answers[i].checked) {
+        answer = text;
+        console.log("lab", answer);
+      }
+    }
+  });
+  return answer;
 };
 
 submit.addEventListener("click", () => {
-    const checkedAnswer = getAnswer();
-    console.log(checkedAnswer);
+  let checkedAnswer = getAnswer();
+  console.log("Your ans", checkedAnswer, "Right-ans", rightAns);
+  document.getElementById(
+    "your-ans"
+  ).innerHTML = `You Selected : ${checkedAnswer}`;
 
-    if (checkedAnswer === quizDb[questionCount].ans) {
-        score++;
-        console.log(score);
-    }
+  if (checkedAnswer === rightAns) {
+    document.getElementById("status").innerHTML = "Correct Answer";
 
-    questionCount = questionCount + 1;
-    console.log(questionCount);
+    console.log("Correct Ans");
+    console.log("Initial Score:", score);
+    score++;
+    let yourScore = (document.getElementById(
+      "scores"
+    ).value = `Your Score is ${score}`);
+    document.getElementById("scores").innerHTML = yourScore;
+    console.log("Now YOur Score", score);
+  } else {
+    document.getElementById("status").innerHTML = "Wrong Answer";
+    document.getElementById("scores").value = `Your Score is ${score}`;
+    console.log("Incorrect Ans");
+  }
 
-    if (questionCount < quizDb.length) {
-        loadQuestion();
-    } else {
-        showScore.innerHTML = `
-          <h4>Hey Congrats !!! You scored ${score} / ${quizDb.length}</h4>
-          <button class="btn" onclick="location.reload()">Play Again</button>
-      `;
-        showScore.classList.remove("scoreArea");
-    }
+  questionCount = questionCount + 1;
+  // console.log(questionCount);
+
+  if (questionCount < 11) {
+    addQuestion();
+  } else {
+    showScore.innerHTML = `
+        <h4>Hey Congrats !!! You scored ${score} / 10</h4>
+        <button class="btn" onclick="location.reload()">Play Again</button>
+    `;
+    showScore.classList.remove("scoreArea");
+  }
 });
